@@ -1,10 +1,11 @@
-# Simple Blog Backend (First Commit)
+# Simple Blog Backend (TypeScript Starter)
 
-Starter backend project for a simple blog system using Express and MySQL.
+Starter backend project for a simple blog system using Express, TypeScript, and MySQL.
 
 ## Stack
 
-- Node.js + Express
+- Node.js + Express + TypeScript
+- Prisma ORM
 - MySQL (Docker Compose)
 
 ## Quick Start
@@ -27,11 +28,31 @@ Starter backend project for a simple blog system using Express and MySQL.
    docker compose up -d
    ```
 
-4. Run API server:
+4. Generate Prisma Client and sync schema:
+
+   ```bash
+   npm run prisma:generate
+   npm run prisma:push
+   ```
+
+5. Run API server:
 
    ```bash
    npm run dev
    ```
+
+## Build for production
+
+```bash
+npm run build
+npm start
+```
+
+## Prisma scripts
+
+- `npm run prisma:generate`
+- `npm run prisma:push`
+- `npm run prisma:migrate`
 
 ## Endpoints
 

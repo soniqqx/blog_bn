@@ -1,7 +1,7 @@
-const express = require("express");
-const cors = require("cors");
+import cors from "cors";
+import express from "express";
 
-const postRoutes = require("./routes/postRoutes");
+import postRoutes from "./routes/postRoutes";
 
 const app = express();
 
@@ -14,4 +14,4 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/posts", postRoutes);
 
-module.exports = app;
+export default app;
