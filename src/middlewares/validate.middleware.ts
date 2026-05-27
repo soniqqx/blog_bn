@@ -8,3 +8,10 @@ export const validateBody =
     req.body = validator(req.body);
     next();
   };
+
+export const validateQuery =
+  <TQuery>(validator: Validator<TQuery>) =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    res.locals.validatedQuery = validator(req.query);
+    next();
+  };

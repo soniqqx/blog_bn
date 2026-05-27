@@ -2,13 +2,14 @@ import type { NextFunction, Request, Response } from "express";
 
 import { adminBlogService } from "./admin-blog.service";
 import { sendSuccess } from "../../lib/response";
-import { BlogUpdateInput } from "../blog/blog.types";
+import { AdminBlogListQuery, BlogUpdateInput } from "../blog/blog.types";
 
 export const adminBlogController = {
-  async list(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async list(req: Request<unknown, unknown, unknown, AdminBlogListQuery>, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await adminBlogService.listDrafts();
-      sendSuccess(res, 200, "Drafts fetched successfully.", result);
+      const query = (res.locals.validatedQuery as AdminBlogListQuery) ?? req.query;
+      const result = await adminBlogService.getBlogs(query);
+      sendSuccess(res, 200, "Blogs fetched successfully.", result);
     } catch (error) {
       next(error);
     }
