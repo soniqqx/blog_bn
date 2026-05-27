@@ -1,4 +1,4 @@
-import { Blog, BlogImage } from "@prisma/client";
+import { Blog } from "@prisma/client";
 import { PaginatedResult } from "../../utils/pagination";
 import { PaginationParams } from "../../utils/pagination";
 
@@ -31,7 +31,12 @@ export type BlogUpdateInput = {
   excerpt?: string;
   content?: string;
   coverImageUrl?: string;
-  images?: BlogImage[];
+  images?: BlogImageInput[];
+};
+
+export type BlogImageInput = {
+  imageUrl: string;
+  sortOrder: number;
 };
 
 export type BlogListResult = PaginatedResult<Blog>;

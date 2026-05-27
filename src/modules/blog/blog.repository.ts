@@ -39,7 +39,7 @@ export const blogRepository = {
         return buildPaginatedResult(items, totalItems, pagination);
     },
 
-    findBlogBySlug(slug: string): Promise<(Blog & { images: BlogImage[]; comments: Comment[] }) | null> {
+    findBlogDetailBySlug(slug: string): Promise<(Blog & { images: BlogImage[]; comments: Comment[] }) | null> {
         return prisma.blog.findUnique({
             where: { slug },
             include: {
@@ -58,7 +58,13 @@ export const blogRepository = {
         });
     },
 
-    updateBlog(id: number, data: Partial<Blog>): Promise<Blog> {
+    findBlogBySlug(slug: string): Promise<Blog | null> {
+        return prisma.blog.findUnique({
+            where: { slug },
+        });
+    },
+
+    updateBlog(id: number, data: Prisma.BlogUpdateInput): Promise<Blog> {
         return prisma.blog.update({
             where: { id },
             data,
