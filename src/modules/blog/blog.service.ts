@@ -1,8 +1,8 @@
-import { Blog, BlogImage, Comment } from "@prisma/client";
+import { Blog } from "@prisma/client";
 import { AppError } from "../../lib/errors";
 import { resolvePagination } from "../../utils/pagination";
 import { blogRepository } from "./blog.repository";
-import { BlogListParams, BlogListQuery, BlogListResult } from "./blog.types";
+import { BlogListParams, BlogListQuery, BlogListResult, BlogWithImages } from "./blog.types";
 
 export const blogService = {
   buildListParams(query: BlogListQuery, isPublished?: boolean): BlogListParams {
@@ -19,12 +19,12 @@ export const blogService = {
     return blogRepository.findBlogs(this.buildListParams(query, true));
   },
   
-  async getBlogBySlug(slug: string): Promise<Blog & { images: BlogImage[]; }> {
+  async getBlogBySlug(slug: string): Promise<BlogWithImages> {
     const blog = await blogRepository.findBlogDetailBySlug(slug);
     if (!blog) {
       throw new AppError(404, "Blog not found.");
     }
 
-    return blog;
+    return blogRepository.incrementViewCountBySlug(slug);
   }
 };

@@ -37,7 +37,7 @@ export const adminBlogController = {
         throw new AppError(400, "id must be a positive integer.");
       }
 
-      const isPublished = Boolean((req.body as { isPublished: boolean }).isPublished);
+      const isPublished = (req.body as { isPublished: boolean }).isPublished;
       const result = await adminBlogService.updateBlogStatus(id, isPublished);
       sendSuccess(
         res,

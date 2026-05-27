@@ -1,7 +1,7 @@
 import { Blog, BlogImage, Comment, CommentStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { buildPaginatedResult, buildPagination } from "../../utils/pagination";
-import { BlogListParams, BlogListResult } from "./blog.types";
+import { BlogListParams, BlogListResult, BlogStatusUpdateResult, BlogWithImages } from "./blog.types";
 
 export const blogRepository = {
     async findBlogs(params: BlogListParams): Promise<BlogListResult> {
@@ -43,7 +43,25 @@ export const blogRepository = {
         return prisma.blog.findUnique({
             where: { slug },
             include: {
-                images: true
+                images: {
+                    orderBy: { sortOrder: "asc" },
+                }
+            },
+        });
+    },
+
+    incrementViewCountBySlug(slug: string): Promise<BlogWithImages> {
+        return prisma.blog.update({
+            where: { slug },
+            data: {
+                viewCount: {
+                    increment: 1,
+                },
+            },
+            include: {
+                images: {
+                    orderBy: { sortOrder: "asc" },
+                },
             },
         });
     },
@@ -60,20 +78,31 @@ export const blogRepository = {
         });
     },
 
-    updateBlog(id: number, data: Prisma.BlogUpdateInput): Promise<Blog> {
+    updateBlog(id: number, data: Prisma.BlogUpdateInput): Promise<BlogWithImages> {
         return prisma.blog.update({
             where: { id },
             data,
+            include: {
+                images: {
+                    orderBy: { sortOrder: "asc" },
+                },
+            },
         });
     },
 
-    updateBlogStatus(id: number, status: boolean, postedAt: Date | null): Promise<Blog> {
+    updateBlogStatus(id: number, status: boolean, postedAt: Date | null): Promise<BlogStatusUpdateResult> {
         return prisma.blog.update({
             where: { id },
             data: { 
                 isPublished: status,
                 postedAt
              },
+            select: {
+                id: true,
+                isPublished: true,
+                postedAt: true,
+                updatedAt: true,
+            },
         });
     },
 };
