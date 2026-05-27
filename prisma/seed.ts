@@ -75,8 +75,8 @@ const main = async (): Promise<void> => {
         authorName: "Alice",
         message: "Great first post. Looking forward to more technical articles.",
         status: CommentStatus.APPROVED,
-        approvedAt: new Date(),
-        approvedByAdminId: admin.id,
+        moderatedAt: new Date(),
+        moderatedByAdminId: admin.id,
       },
       {
         blogId: firstBlog.id,

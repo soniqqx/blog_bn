@@ -19,7 +19,7 @@ model Admin {
   isActive         Boolean   @default(true) @map("is_active")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
-  approvedComments Comment[] @relation("ApprovedByAdmin")
+  moderatedComments Comment[] @relation("ModeratedByAdmin")
 
   @@map("admins")
 }
@@ -60,10 +60,10 @@ model Comment {
   message            String        @db.VarChar(1000)
   status             CommentStatus @default(PENDING)
   createdAt          DateTime      @default(now()) @map("created_at")
-  approvedAt         DateTime?     @map("approved_at")
-  approvedByAdminId  Int?          @map("approved_by_admin_id")
+  moderatedAt        DateTime?     @map("moderated_at")
+  moderatedByAdminId Int?          @map("moderated_by_admin_id")
   blog               Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
-  approvedByAdmin    Admin?        @relation("ApprovedByAdmin", fields: [approvedByAdminId], references: [id], onDelete: SetNull)
+  moderatedByAdmin   Admin?        @relation("ModeratedByAdmin", fields: [moderatedByAdminId], references: [id], onDelete: SetNull)
 
   @@map("comments")
 }

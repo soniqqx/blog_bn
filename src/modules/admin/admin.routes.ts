@@ -9,6 +9,7 @@ import {
   validateAdminUpdateBlogBody,
   validateAdminUpdateBlogStatusBody,
 } from "./admin-blog.validator";
+import { validateAdminUpdateCommentStatusBody } from "./admin-comment.validator";
 
 const adminRoutes = Router();
 
@@ -17,5 +18,6 @@ adminRoutes.get("/blogs", validateQuery(validateAdminBlogListQuery), adminBlogCo
 adminRoutes.put("/blogs/:id", validateBody(validateAdminUpdateBlogBody), adminBlogController.update);
 adminRoutes.patch("/blogs/:id/status", validateBody(validateAdminUpdateBlogStatusBody), adminBlogController.updateStatus);
 adminRoutes.get("/comments", adminCommentController.list);
+adminRoutes.patch("/comments/:id/status", validateBody(validateAdminUpdateCommentStatusBody), adminCommentController.updateStatus);
 
 export { adminRoutes };
