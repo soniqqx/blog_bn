@@ -1,26 +1,36 @@
 import "dotenv/config";
 
 import app from "./app";
-import pool from "./config/db";
+import { env } from "./config/env";
+import { logger } from "./config/logger";
+import { prisma } from "./lib/prisma";
 
-const PORT = Number(process.env.PORT) || 3000;
-
-async function startServer(): Promise<void> {
+const startServer = async (): Promise<void> => {
   try {
-    await pool.$connect();
-    console.log("Connected to database via Prisma");
-  } catch {
-    console.warn("Database is not ready yet. Server will still start.");
+    await prisma.$connect();
+    logger.info("Connected to database via Prisma.");
+  } catch (error) {
+    logger.warn("Database is not ready yet. Server will still start.", error);
   }
 
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  const server = app.listen(env.PORT, () => {
+    logger.info(`Server running on http://localhost:${env.PORT}`);
   });
-}
+
+  const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
+    logger.info(`Received ${signal}, shutting down.`);
+    server.close(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGINT", () => {
+    void shutdown("SIGINT");
+  });
+  process.on("SIGTERM", () => {
+    void shutdown("SIGTERM");
+  });
+};
 
 void startServer();
-
-process.on("SIGINT", async () => {
-  await pool.$disconnect();
-  process.exit(0);
-});

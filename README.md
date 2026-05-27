@@ -1,6 +1,6 @@
-# Simple Blog Backend (TypeScript Starter)
+# Simple Blog Backend (TypeScript + Prisma)
 
-Starter backend project for a simple blog system using Express, TypeScript, and MySQL.
+Starter backend project for a simple blog system using Express, TypeScript, Prisma, and MySQL.
 
 ## Stack
 
@@ -33,6 +33,7 @@ Starter backend project for a simple blog system using Express, TypeScript, and 
    ```bash
    npm run prisma:generate
    npm run prisma:push
+   npm run prisma:seed
    ```
 
 5. Run API server:
@@ -40,6 +41,63 @@ Starter backend project for a simple blog system using Express, TypeScript, and 
    ```bash
    npm run dev
    ```
+
+## Project structure
+
+```text
+src/
+  app.ts
+  server.ts
+  config/
+    env.ts
+    logger.ts
+  lib/
+    prisma.ts
+    errors.ts
+    response.ts
+  middlewares/
+    auth.middleware.ts
+    error.middleware.ts
+    validate.middleware.ts
+    rate-limit.middleware.ts
+  modules/
+    auth/
+      auth.controller.ts
+      auth.service.ts
+      auth.repository.ts
+      auth.validator.ts
+      auth.routes.ts
+      auth.types.ts
+    blog/
+      blog.controller.ts
+      blog.service.ts
+      blog.repository.ts
+      blog.validator.ts
+      blog.routes.ts
+      blog.types.ts
+    comment/
+      comment.controller.ts
+      comment.service.ts
+      comment.repository.ts
+      comment.validator.ts
+      comment.routes.ts
+      comment.types.ts
+    admin/
+      admin-blog.controller.ts
+      admin-blog.service.ts
+      admin-comment.controller.ts
+      admin-comment.service.ts
+      admin.routes.ts
+  routes/
+    index.ts
+prisma/
+  schema.prisma
+  migrations/
+  seed.ts
+tests/
+  integration/
+  unit/
+```
 
 ## Build for production
 
@@ -53,8 +111,22 @@ npm start
 - `npm run prisma:generate`
 - `npm run prisma:push`
 - `npm run prisma:migrate`
+- `npm run prisma:seed`
 
 ## Endpoints
 
 - `GET /health`
-- `GET /api/posts`
+- `POST /api/auth/login` (functional)
+- `GET /api/blogs` (scaffold, returns `501`)
+- `POST /api/comments` (scaffold, returns `501`)
+- `GET /api/admin/blogs` (scaffold, returns `501`)
+- `GET /api/admin/comments` (scaffold, returns `501`)
+
+## Login request example
+
+```json
+{
+  "username": "admin",
+  "password": "your-password"
+}
+```

@@ -1,0 +1,10 @@
+import type { NextFunction, Request, Response } from "express";
+
+export type Validator<TBody> = (body: unknown) => TBody;
+
+export const validateBody =
+  <TBody>(validator: Validator<TBody>) =>
+  (req: Request, _res: Response, next: NextFunction): void => {
+    req.body = validator(req.body);
+    next();
+  };
