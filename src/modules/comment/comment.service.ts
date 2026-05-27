@@ -1,7 +1,8 @@
 import { CommentStatus } from "@prisma/client";
 import { AppError } from "../../lib/errors";
+import { resolvePagination } from "../../utils/pagination";
 import { commentRepository } from "./comment.repository";
-import { CommentCreateInput } from "./comment.types";
+import { CommentCreateInput, CommentListQuery, type CommentListResult } from "./comment.types";
 import type { Comment } from "@prisma/client";
 
 export const commentService = {
@@ -17,5 +18,15 @@ export const commentService = {
     };
     const comment = await commentRepository.createComment(inputData);
     return comment;
+  },
+
+  async getApprovedCommentsByBlogSlug(slug: string, query: CommentListQuery): Promise<CommentListResult> {
+    const blog = await commentRepository.findPublishedBlogBySlug(slug);
+    if (!blog) {
+      throw new AppError(404, "Blog not found.");
+    }
+
+    const pagination = resolvePagination(query.page, query.pageSize);
+    return commentRepository.findCommentsByBlogId(blog.id, pagination, CommentStatus.APPROVED);
   },
 };

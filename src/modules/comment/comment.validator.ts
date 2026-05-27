@@ -1,4 +1,4 @@
-import type { CreateCommentBody } from "./comment.types";
+import type { CommentListQuery, CreateCommentBody } from "./comment.types";
 import { AppError } from "../../lib/errors";
 
 export const validateCreateCommentBody = (body: unknown): CreateCommentBody => {
@@ -45,5 +45,31 @@ export const validateCreateCommentBody = (body: unknown): CreateCommentBody => {
     blogId,
     authorName,
     message,
+  };
+};
+
+export const validateCommentListQuery = (query: unknown): CommentListQuery => {
+  if (typeof query !== "object" || query === null) {
+    throw new AppError(400, "Query params must be an object.");
+  }
+
+  const raw = query as Record<string, unknown>;
+
+  const parseOptionalPositiveInt = (value: unknown, key: string): number | undefined => {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      throw new AppError(400, `${key} must be a positive integer.`);
+    }
+
+    return parsed;
+  };
+
+  return {
+    page: parseOptionalPositiveInt(raw.page, "page"),
+    pageSize: parseOptionalPositiveInt(raw.pageSize, "pageSize"),
   };
 };

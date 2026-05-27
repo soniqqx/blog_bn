@@ -1,13 +1,16 @@
 import { CommentStatus } from "@prisma/client";
 import { AppError } from "../../lib/errors";
+import { resolvePagination } from "../../utils/pagination";
 import { commentRepository } from "../comment/comment.repository";
 import type { Comment } from "@prisma/client";
+import type { AdminCommentListQuery, CommentListResult } from "../comment/comment.types";
 
 export const adminCommentService = {
-  listPending(): never {
-    throw new AppError(501, "Admin comment module is scaffolded only.");
-    
+  async listComments(query: AdminCommentListQuery): Promise<CommentListResult> {
+    const pagination = resolvePagination(query.page, query.pageSize);
+    return commentRepository.findCommentsForAdmin(pagination, query.status);
   },
+
   async updateCommentStatus(id: number, status: CommentStatus, moderatedByAdminId: number): Promise<Comment> {
     const existing = await commentRepository.findCommentById(id);
     if (!existing) {

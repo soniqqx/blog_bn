@@ -4,11 +4,18 @@ import { adminCommentService } from "./admin-comment.service";
 import { AppError } from "../../lib/errors";
 import { sendSuccess } from "../../lib/response";
 import type { AuthTokenPayload } from "../auth/auth.types";
+import type { AdminCommentListQuery } from "../comment/comment.types";
 
 export const adminCommentController = {
-  list(_req: Request, _res: Response, next: NextFunction): void {
+  async list(
+    req: Request<unknown, unknown, unknown, AdminCommentListQuery>,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
-      adminCommentService.listPending();
+      const query = (res.locals.validatedQuery as AdminCommentListQuery) ?? req.query;
+      const result = await adminCommentService.listComments(query);
+      sendSuccess(res, 200, "Comments fetched successfully.", result);
     } catch (error) {
       next(error);
     }

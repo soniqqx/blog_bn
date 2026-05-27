@@ -1,6 +1,8 @@
 import { prisma } from "../../lib/prisma";
 import { CommentCreateInput } from "./comment.types";
 import type { Comment, CommentStatus } from "@prisma/client";
+import { buildPaginatedResult, buildPagination, type PaginationParams } from "../../utils/pagination";
+import type { CommentListResult } from "./comment.types";
 
 export const commentRepository = {
   createComment(input: CommentCreateInput): Promise<Comment> {
@@ -14,6 +16,54 @@ export const commentRepository = {
       where: { id: blogId },
       select: { id: true, isPublished: true },
     });
+  },
+
+  findPublishedBlogBySlug(slug: string): Promise<{ id: number } | null> {
+    return prisma.blog.findFirst({
+      where: {
+        slug,
+        isPublished: true,
+      },
+      select: { id: true },
+    });
+  },
+
+  async findCommentsByBlogId(
+    blogId: number,
+    params: PaginationParams,
+    status?: CommentStatus,
+  ): Promise<CommentListResult> {
+    const { skip, take } = buildPagination(params);
+    const where = status ? { blogId, status } : { blogId };
+
+    const [items, totalItems] = await Promise.all([
+      prisma.comment.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.comment.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, totalItems, params);
+  },
+
+  async findCommentsForAdmin(params: PaginationParams, status?: CommentStatus): Promise<CommentListResult> {
+    const { skip, take } = buildPagination(params);
+    const where = status ? { status } : {};
+
+    const [items, totalItems] = await Promise.all([
+      prisma.comment.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.comment.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, totalItems, params);
   },
 
   updateCommentStatus(id: number, status: CommentStatus, moderatedByAdminId?: number): Promise<Comment> {
