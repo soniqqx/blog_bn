@@ -5,6 +5,10 @@ import { prisma } from "../src/lib/prisma";
 
 const main = async (): Promise<void> => {
   const passwordHash = await bcrypt.hash("admin123", 10);
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
 
   const admin = await prisma.admin.upsert({
     where: { username: "admin" },
@@ -30,6 +34,7 @@ const main = async (): Promise<void> => {
         "This is the first seeded article. It demonstrates how blog records are inserted together with images and comments in development.",
       coverImageUrl: "https://images.unsplash.com/photo-1499750310107-5fef28a66643",
       isPublished: true,
+      postedAt: threeDaysAgo,
       viewCount: 128,
     },
   });
@@ -45,6 +50,20 @@ const main = async (): Promise<void> => {
       isPublished: false,
       postedAt: null,
       viewCount: 17,
+    },
+  });
+
+  const thirdBlog = await prisma.blog.create({
+    data: {
+      slug: "typescript-prisma-query-tips",
+      title: "TypeScript Prisma Query Tips",
+      excerpt: "Practical tips for pagination, sorting, and safe filtering with Prisma.",
+      content:
+        "This seeded article is published and includes ordered blog images so admin update and list flows can be verified quickly.",
+      coverImageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
+      isPublished: true,
+      postedAt: oneDayAgo,
+      viewCount: 56,
     },
   });
 
@@ -65,6 +84,16 @@ const main = async (): Promise<void> => {
         imageUrl: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2",
         sortOrder: 1,
       },
+      {
+        blogId: thirdBlog.id,
+        imageUrl: "https://images.unsplash.com/photo-1518773553398-650c184e0bb3",
+        sortOrder: 1,
+      },
+      {
+        blogId: thirdBlog.id,
+        imageUrl: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4",
+        sortOrder: 2,
+      },
     ],
   });
 
@@ -72,23 +101,33 @@ const main = async (): Promise<void> => {
     data: [
       {
         blogId: firstBlog.id,
-        authorName: "Alice",
-        message: "Great first post. Looking forward to more technical articles.",
+        authorName: "สมชาย",
+        message: "บทความดีมาก 2026",
         status: CommentStatus.APPROVED,
-        moderatedAt: new Date(),
+        moderatedAt: twoDaysAgo,
         moderatedByAdminId: admin.id,
       },
       {
         blogId: firstBlog.id,
-        authorName: "Bob",
-        message: "Could you share the project setup steps in more detail?",
+        authorName: "สายฝน",
+        message: "อยากให้เขียนเรื่อง prisma เพิ่ม",
         status: CommentStatus.PENDING,
       },
       {
         blogId: secondBlog.id,
-        authorName: "Eve",
-        message: "This roadmap looks too broad for one sprint.",
+        authorName: "นที",
+        message: "เนื้อหายังไม่พร้อมเผยแพร่",
         status: CommentStatus.REJECTED,
+        moderatedAt: oneDayAgo,
+        moderatedByAdminId: admin.id,
+      },
+      {
+        blogId: thirdBlog.id,
+        authorName: "มานพ",
+        message: "ขอบคุณสำหรับเทคนิคการใช้งาน",
+        status: CommentStatus.APPROVED,
+        moderatedAt: now,
+        moderatedByAdminId: admin.id,
       },
     ],
   });
