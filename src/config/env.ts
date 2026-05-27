@@ -1,6 +1,6 @@
 const DEFAULTS = {
   PORT: 3000,
-  DATABASE_URL: "mysql://root:root@localhost:3306/blog_db",
+  DATABASE_URL: "mysql://root:root@127.0.0.1:3307/blog_db",
   JWT_SECRET: "change-me-in-production",
   JWT_EXPIRES_IN: "1d",
   NODE_ENV: "development",
