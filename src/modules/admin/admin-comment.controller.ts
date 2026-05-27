@@ -17,6 +17,7 @@ export const adminCommentController = {
   async updateStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
+      if(!Number.isInteger(id) || id <= 0) {
         throw new AppError(400, "id must be a positive integer.");
       }
 
