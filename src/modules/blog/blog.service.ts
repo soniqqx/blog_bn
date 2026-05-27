@@ -19,7 +19,7 @@ export const blogService = {
     return blogRepository.findBlogs(this.buildListParams(query, true));
   },
   
-  async getBlogBySlug(slug: string): Promise<Blog & { images: BlogImage[]; comments: Comment[] }> {
+  async getBlogBySlug(slug: string): Promise<Blog & { images: BlogImage[]; }> {
     const blog = await blogRepository.findBlogDetailBySlug(slug);
     if (!blog) {
       throw new AppError(404, "Blog not found.");

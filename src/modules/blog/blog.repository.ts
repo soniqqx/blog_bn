@@ -39,15 +39,11 @@ export const blogRepository = {
         return buildPaginatedResult(items, totalItems, pagination);
     },
 
-    findBlogDetailBySlug(slug: string): Promise<(Blog & { images: BlogImage[]; comments: Comment[] }) | null> {
+    findBlogDetailBySlug(slug: string): Promise<(Blog & { images: BlogImage[]; }) | null> {
         return prisma.blog.findUnique({
             where: { slug },
             include: {
-                images: true,
-                comments: {
-                    where: { status: CommentStatus.APPROVED as CommentStatus },
-                    orderBy: { createdAt: "desc" },
-                },
+                images: true
             },
         });
     },
