@@ -39,9 +39,17 @@ export const blogRepository = {
         return buildPaginatedResult(items, totalItems, pagination);
     },
 
-    findBlogDetailBySlug(slug: string): Promise<(Blog & { images: BlogImage[]; }) | null> {
-        return prisma.blog.findUnique({
-            where: { slug },
+    findBlogDetailBySlug(slug: string, isPublished?: boolean): Promise<(Blog & { images: BlogImage[]; }) | null> {
+        const where: Prisma.BlogWhereInput = {
+            slug,
+        };
+
+        if (isPublished !== undefined) {
+            where.isPublished = isPublished;
+        }
+
+        return prisma.blog.findFirst({
+            where,
             include: {
                 images: {
                     orderBy: { sortOrder: "asc" },

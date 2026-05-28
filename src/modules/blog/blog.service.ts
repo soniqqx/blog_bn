@@ -20,7 +20,7 @@ export const blogService = {
   },
   
   async getBlogBySlug(slug: string): Promise<BlogWithImages> {
-    const blog = await blogRepository.findBlogDetailBySlug(slug);
+    const blog = await blogRepository.findBlogDetailBySlug(slug, true);
     if (!blog) {
       throw new AppError(404, "Blog not found.");
     }

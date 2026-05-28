@@ -16,6 +16,16 @@ export const adminBlogController = {
     }
   },
 
+  async getBlogBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+    try {
+      const result = await adminBlogService.getBlogBySlug(String(req.params.slug));
+      sendSuccess(res, 200, "Blog fetched successfully.", result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);

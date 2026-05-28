@@ -65,10 +65,13 @@
 - คอมเมนต์ใหม่ทุกอันเป็น PENDING และจะแสดงหน้า public เมื่อ APPROVED เท่านั้น
 - ข้อความคอมเมนต์ validate ให้เป็น “ภาษาไทย + ตัวเลข + ช่องว่าง” เท่านั้น
 - การอัปเดตรูปเพิ่มเติมของบทความใช้แนวทาง replace-all คือ หากต้องการแก้ไขรูปเพิ่มเติม ผู้ใช้งานต้องส่งรายการรูปทั้งหมดใหม่ทุกครั้ง ระบบจะลบข้อมูลรูปเดิมและสร้างรายการใหม่แทนการอัปเดตเฉพาะบางรูป แนวทางนี้ถูกเลือกเพื่อให้การจัดการลำดับรูป (sortOrder) มีความเรียบง่ายและลดความซับซ้อนของ logic ในการ reorder รูปภาพ
+- Admin สามารถแก้ไขข้อมูลบทความได้ทั้งในสถานะ publish และ unpublish โดยหากบทความถูกเผยแพร่อยู่ การแก้ไขจะมีผลทันที
+- การเปลี่ยน slug ของบทความจะส่งผลต่อ URL ของบทความทันที และระบบยังไม่ได้รองรับการ redirect จาก URL เดิม
 - ระบบการจัดการสิทธิ์ยังเป็นระดับ admin เป็นหลัก (ยังไม่ขยายเป็นหลายบทบาทเต็มรูปแบบ)
 
 ## Future Improvements
 - เพิ่ม integration/e2e tests สำหรับ endpoint สำคัญ
+- เพิ่มระบบ Redirect เมื่อมีการเปลี่ยน slug
 - เพิ่ม audit log (เช่น ใครแก้ blog อะไรเมื่อไร)
 - ปรับ image update เป็นแบบ diff update (ไม่ต้อง replace ทั้งชุด)
 - เพิ่มให้ระบบสามารถรับรองได้หลายบทบาทมากขึ้น
@@ -149,11 +152,22 @@ npm start
 
 ## Endpoints
 
-- `GET /health`
-- `POST /api/auth/login` (พร้อมใช้งาน)
-- `GET /api/blogs` (โครงสร้างเริ่มต้น อาจคืนค่า `501` ในบางกรณี)
-- `POST /api/comments` (โครงสร้างเริ่มต้น อาจคืนค่า `501` ในบางกรณี)
-- `GET /api/admin/blogs` (โครงสร้างเริ่มต้น อาจคืนค่า `501` ในบางกรณี)
-- `GET /api/admin/comments` (โครงสร้างเริ่มต้น อาจคืนค่า `501` ในบางกรณี)
+### Public
+- `GET /health`  
+- `GET /api/blogs` 
+- `GET /api/blogs/:slug` 
+- `POST /api/comments` 
+- `GET /api/comments/blogs/:slug` 
+### Admin
+- `POST /api/auth/login` 
+- `GET /api/admin/blogs` 
+- `GET /api/admin/blogs/:slug`
+- `PUT /api/admin/blogs/:id`
+- `PATCH /api/admin/blogs/:id/status`
+- `GET /api/admin/comments`
+- `PATCH /api/admin/comments/:id/status`
 
-```
+## API Documentation (Swagger)
+
+- http://localhost:3000/docs สำหรับหน้า Swagger UI
+- http://localhost:3000/docs-json สำหรับไฟล์ OpenAPI JSON

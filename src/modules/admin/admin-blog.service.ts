@@ -21,6 +21,14 @@ export const adminBlogService = {
     return blogRepository.findBlogs(blogService.buildListParams(query, isPublished));
   },
 
+  async getBlogBySlug(slug: string): Promise<BlogWithImages> {
+    const blog = await blogRepository.findBlogDetailBySlug(slug);
+    if (!blog) {
+      throw new AppError(404, "Blog not found.");
+    }
+    return blog;
+  },
+
   async updateBlog(id: number, data: BlogUpdateInput): Promise<BlogWithImages> {
     const existing = await blogRepository.findBlogById(id);
     if (!existing) {

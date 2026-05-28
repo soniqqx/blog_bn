@@ -1,6 +1,8 @@
 import cors from "cors";
 import express from "express";
+import swaggerUi from "swagger-ui-express";
 
+import { swaggerDocument } from "./docs/swagger";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { rateLimitMiddleware } from "./middlewares/rate-limit.middleware";
 import { apiRoutes } from "./routes";
@@ -14,6 +16,11 @@ app.use(rateLimitMiddleware);
 app.get("/health", (_req, res) => {
   res.status(200).json({ success: true, message: "ok" });
 });
+
+app.get("/docs-json", (_req, res) => {
+  res.status(200).json(swaggerDocument);
+});
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use("/api", apiRoutes);
 app.use(errorMiddleware);
