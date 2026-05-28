@@ -17,12 +17,102 @@
 - ดูรายละเอียด Blog ตาม `slug`
 - แสดงคอมเมนต์เฉพาะที่ `APPROVED`
 - ส่งคอมเมนต์ใหม่ (สถานะเริ่มต้นเป็น `PENDING`)
+  
 ### ฝั่ง Admin (ต้อง Login)
 - ดูรายการ Blog ทั้งหมด (ทั้ง published / unpublished)
 - แก้ไขข้อมูล Blog (ยกเว้น `postedAt` และ `viewCount`)
 - แก้ไข URL Slug
 - Publish / Unpublish
 - ดูรายการคอมเมนต์ และเลือก Approve/Reject
+
+## System Design & Decisions
+
+### 1. Architecture Pattern
+โปรเจกต์นี้ใช้แนวทาง Layered Architecture แบ่งเป็น:
+- Controller: รับ request และส่ง response
+- Service: จัดการ business logic
+- Repository: ติดต่อ database ผ่าน Prisma
+- Validator: ตรวจสอบความถูกต้องของข้อมูล
+
+แนวทางนี้ช่วยให้ระบบแยกความรับผิดชอบชัดเจน และง่ายต่อการ maintain และ scale ในอนาคต
+
+---
+
+### 2. Public vs Admin Separation
+ระบบแยก endpoint ระหว่าง Public และ Admin อย่างชัดเจน:
+- Public API: ใช้สำหรับผู้ใช้งานทั่วไป (อ่าน blog, comment)
+- Admin API: ใช้สำหรับจัดการข้อมูลทั้งหมดของระบบ
+
+เพื่อป้องกันการปนกันของ business logic และเพิ่มความปลอดภัย
+
+---
+
+### 3. Blog Publishing Strategy
+ระบบใช้ `isPublished` เป็นตัวควบคุมการแสดงผลของ blog:
+- Blog สามารถถูกสร้างและแก้ไขได้ตลอดเวลา
+- การเผยแพร่ควบคุมด้วย `isPublished`
+- Public API จะดึงเฉพาะ blog ที่ `isPublished = true`
+- การ publish/unpublish เป็นการเปลี่ยน state ของ visibility โดยไม่กระทบ content
+---
+
+### 4. Comment Moderation Flow
+Comment ทุกอันจะมี status:
+- PENDING (เริ่มต้น)
+- APPROVED (แสดงบน public)
+- REJECTED (ไม่แสดง)
+
+เพื่อควบคุม content ก่อนแสดงสู่ public
+
+---
+
+### 5. Image Handling Strategy
+ระบบเก็บ `sortOrder` เพื่อควบคุมลำดับการแสดงผลของรูปภาพเพิ่มเติมใน blog
+
+แนวทางการ update ใช้แบบ replace-all strategy:
+- เมื่อมีการแก้ไขรูป ต้องส่งรายการรูปทั้งหมดใหม่
+- ระบบจะลบของเดิมและสร้างใหม่ตามลำดับ `sortOrder`
+
+เพื่อลดความซับซ้อนของ logic การ reorder
+
+---
+
+### 6. View Count Strategy
+จำนวนผุ้ชม จะเพิ่มเมื่อเรียก GET /blogs/:slug สำเร็จ
+เพื่อวัดการเข้าชมแบบง่าย
+
+---
+
+### 7. Assumption on Admin Role
+ระบบออกแบบให้มี admin role เพียงระดับเดียว
+ยังไม่รองรับ RBAC (Role-Based Access Control)
+
+## Assumptions & ข้อจำกัด
+
+### Blog
+- วันที่โพสต์ ถูกกำหนดตอน publish ครั้งแรกและไม่สามารถเปลี่ยนแปลงได้
+- จำนวนผู้ชม เพิ่มเมื่อเรียก GET /blogs/:slug สำเร็จ
+- admin สามารถแก้ไข blog ได้ทั้ง published และ unpublished
+- slug เปลี่ยนแล้วมีผลทันที และไม่มี redirect
+
+### Comment
+- comment ทุกอันเริ่มต้นที่ PENDING
+- แสดงเฉพาะ APPROVED เท่านั้น
+- ไม่จำเป็นต้อง login เพื่อ comment
+- validate เฉพาะภาษาไทย ตัวเลข และช่องว่าง
+
+### Image
+- ใช้ replace-all strategy ในการ update images
+
+### System
+- ระบบมี role เดียวคือ admin
+
+## Future Improvements
+- เพิ่ม integration/e2e tests สำหรับ endpoint สำคัญ
+- เพิ่มระบบ Redirect เมื่อมีการเปลี่ยน slug
+- เพิ่ม audit log (เช่น ใครแก้ blog อะไรเมื่อไร)
+- ปรับ image update เป็นแบบ diff update (ไม่ต้อง replace ทั้งชุด)
+- เพิ่มให้ระบบสามารถรับรองได้หลาย role มากขึ้น
+- เพิ่ม CI pipeline (lint/test/build) ก่อน deploy
 
 ## วิธีเริ่มต้นใช้งาน
 
@@ -57,25 +147,6 @@
    ```bash
    npm run dev
    ```
-
-## Assumption และข้อจำกัด
-- ระบบนี้โฟกัส Backend API เป็นหลัก (ไม่ได้ทำ Frontend จริง)
-- วันที่โพสต์ (postedAt) จะถูกกำหนดตอน publish ครั้งแรก และคงค่าเดิมเมื่อ unpublish/re-publish
-- จำนวนเข้าชม (viewCount) ทุกครั้งที่เรียกดูรายละเอียด blog ผ่าน API GET /blogs/:slug สำเร็จ
-- คอมเมนต์ใหม่ทุกอันเป็น PENDING และจะแสดงหน้า public เมื่อ APPROVED เท่านั้น
-- ข้อความคอมเมนต์ validate ให้เป็น “ภาษาไทย + ตัวเลข + ช่องว่าง” เท่านั้น
-- การอัปเดตรูปเพิ่มเติมของบทความใช้แนวทาง replace-all คือ หากต้องการแก้ไขรูปเพิ่มเติม ผู้ใช้งานต้องส่งรายการรูปทั้งหมดใหม่ทุกครั้ง ระบบจะลบข้อมูลรูปเดิมและสร้างรายการใหม่แทนการอัปเดตเฉพาะบางรูป แนวทางนี้ถูกเลือกเพื่อให้การจัดการลำดับรูป (sortOrder) มีความเรียบง่ายและลดความซับซ้อนของ logic ในการ reorder รูปภาพ
-- Admin สามารถแก้ไขข้อมูลบทความได้ทั้งในสถานะ publish และ unpublish โดยหากบทความถูกเผยแพร่อยู่ การแก้ไขจะมีผลทันที
-- การเปลี่ยน slug ของบทความจะส่งผลต่อ URL ของบทความทันที และระบบยังไม่ได้รองรับการ redirect จาก URL เดิม
-- ระบบการจัดการสิทธิ์ยังเป็นระดับ admin เป็นหลัก (ยังไม่ขยายเป็นหลายบทบาทเต็มรูปแบบ)
-
-## Future Improvements
-- เพิ่ม integration/e2e tests สำหรับ endpoint สำคัญ
-- เพิ่มระบบ Redirect เมื่อมีการเปลี่ยน slug
-- เพิ่ม audit log (เช่น ใครแก้ blog อะไรเมื่อไร)
-- ปรับ image update เป็นแบบ diff update (ไม่ต้อง replace ทั้งชุด)
-- เพิ่มให้ระบบสามารถรับรองได้หลายบทบาทมากขึ้น
-- เพิ่ม CI pipeline (lint/test/build) ก่อน deploy
 
 ## โครงสร้างโปรเจกต์
 
@@ -136,20 +207,6 @@ tests/
   unit/
 ```
 
-## Build สำหรับ production
-
-```bash
-npm run build
-npm start
-```
-
-## คำสั่ง Prisma
-
-- `npm run prisma:generate`
-- `npm run prisma:push`
-- `npm run prisma:migrate`
-- `npm run prisma:seed`
-
 ## Endpoints
 
 ### Public
@@ -171,3 +228,17 @@ npm start
 
 - http://localhost:3000/docs สำหรับหน้า Swagger UI
 - http://localhost:3000/docs-json สำหรับไฟล์ OpenAPI JSON
+
+## Build สำหรับ production
+
+```bash
+npm run build
+npm start
+```
+
+## คำสั่ง Prisma
+
+- `npm run prisma:generate`
+- `npm run prisma:push`
+- `npm run prisma:migrate`
+- `npm run prisma:seed`
