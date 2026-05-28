@@ -109,8 +109,9 @@ Comment ทุกอันจะมี status:
 ## Future Improvements
 - เพิ่ม integration/e2e tests สำหรับ endpoint สำคัญ
 - เพิ่มระบบ Redirect เมื่อมีการเปลี่ยน slug
-- เพิ่ม audit log (เช่น ใครแก้ blog อะไรเมื่อไร)
-- ปรับ image update เป็นแบบ diff update (ไม่ต้อง replace ทั้งชุด)
+- เพิ่ม audit log (เช่น ใครแก้ blog / comment เมื่อไหร่)
+- เพิ่ม draft system สำหรับ blog เพื่อรองรับการแก้ไขแบบไม่ overwrite ข้อมูลเดิม
+- ปรับ image update เป็นแบบ diff update (เพิ่ม/ลบ/แก้ไขเฉพาะบางรูป) 
 - เพิ่มให้ระบบสามารถรับรองได้หลาย role มากขึ้น
 - เพิ่ม CI pipeline (lint/test/build) ก่อน deploy
 
